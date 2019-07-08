@@ -1,9 +1,9 @@
-#This code is just for testing to get the data of the sensors from the topics and services.
+#This code is just for testing to get the data of the sensors from the topics, services and move the drone a little bit.
 
 import rospy
 from clever import srv
 from std_srvs.srv import Trigger
-#from time import sleep
+#from time import sleep		#don't use time.sleep with ros it is better to use rospy.sleep as the first one is blocking function which block the ros nodes too
 
 
 rospy.init_node('test_node') # name of your ROS node
@@ -19,39 +19,16 @@ set_rates = rospy.ServiceProxy('set_rates', srv.SetRates)
 land = rospy.ServiceProxy('land', Trigger)
 
 
-print("Starting the task after:")
-
-for i in range(6):
-	print(5-i,"...")
-	rospy.sleep(1)
-navigate(x=0, y=0, z=1.5, speed=0.5, frame_id='body', auto_arm=True)
-print("Height: ~1.5m")
-for i in range(4):
-	print(3-i,"...")
-	rospy.sleep(1)
-navigate(x=5, y=3, z=1.5, speed=0.5, frame_id='aruco_map')
-print("Height: 1.5m")
-for i in range(4):
-	print(3-i,"...")
-	rospy.sleep(1)
-
-res = land()
-
-if(res.success):
-    print("Drone has been landed")
-
-print("--------------Done--------------")
-
 
 
 # for i in range(10):
 	# print("x: {:} , y: {:} , z: {:}".format(get_telemetry().x, get_telemetry().y, get_telemetry().z))
 	#sleep(1)
 
-#for i in range(10):
-# while(True):
-# 	print(get_telemetry())
-# 	print("-------------------")
-# 	sleep(1)
+# Getting the data from the service
+while(True):
+	print(get_telemetry())
+	print("-------------------")
+	rospy.sleep(0.5)
 
 
