@@ -1,5 +1,5 @@
 # COEX-Internship19
-This repo is for my codes during the internship in Copter-Express (COEX) company in Moscow, Russia.\n
+This repo is for my codes during the internship in Copter-Express (COEX) company in Moscow, Russia.<br/>
 The drone that was used is Clever 4.
 
 #### tests folder:
