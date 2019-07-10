@@ -2,5 +2,5 @@ ArUcoMAPMIN_x = 0
 ArUcoMAPMIN_y = 0
 ArUcoMAPMAX_x = 9
 ArUcoMAPMAX_y = 9
-VIEW_HIGHT = 2
+VIEW_HIGHT = 1
 SPEED = 0.5

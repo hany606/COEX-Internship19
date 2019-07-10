@@ -3,6 +3,9 @@
 import rospy
 from clever import srv
 from std_srvs.srv import Trigger
+import shared
+from shared import count_down
+import settings
 #from time import sleep		#don't use time.sleep with ros it is better to use rospy.sleep as the first one is blocking function which block the ros nodes too
 
 
@@ -27,7 +30,7 @@ land = rospy.ServiceProxy('land', Trigger)
 
 # Getting the data from the service
 while(True):
-	print(get_telemetry())
+	print(get_telemetry(frame_id='aruco_map'))
 	print("-------------------")
 	rospy.sleep(0.5)
 

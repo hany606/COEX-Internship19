@@ -22,14 +22,20 @@ def get_distance(x1, y1, z1, x2, y2, z2):
 
 def arrived(telemetry,x, y, z, frame_id='aruco_map'):
     tolerance = 0.2
-    tmp = telemetry(frame_id = frame_id)
-    if(get_distance(x, y, z, tmp.x, tmp.y, tmp.z) < tolerance):
+    current_pos = telemetry(frame_id = frame_id)
+    distance_difference = get_distance(x,y,z,current_pos.x,current_pos.y,current_pos.z)
+    # print("Difference:{:}".format(distance_difference))
+    if(distance_difference < tolerance):
+        print("################ Arrived ################")
         return 1
     return 0
-def wait_till_arrive(telemetry, x, y, z, frame_id='aruco_map', ):
+
+def wait_till_arrive(telemetry, x, y, z, frame_id='aruco_map', takeoff_mode=0):
     while(True):
-	tmp = telemetry(frame_id=frame_id)
-	print("Still didn't reach the goal x={:}, y={:}, z={:}\n Current position:  x={:}, y={:}, z={:}".format(x,y,z,tmp.x, tmp.y, tmp.z))
+        current_pos = telemetry(frame_id=frame_id)
+        if(takeoff_mode == 1):
+	        x,y = current_pos.x,current_pos.y
+        # print("Target position:  x={:}, y={:}, z={:}\nCurrent position: x={:}, y={:}, z={:}".format(x,y,z,current_pos.x, current_pos.y, current_pos.z))
         if(arrived(telemetry, x, y, z, frame_id)):
             break
         sleep(0.2)

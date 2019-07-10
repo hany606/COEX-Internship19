@@ -22,29 +22,40 @@ set_rates = rospy.ServiceProxy('set_rates', srv.SetRates)
 land = rospy.ServiceProxy('land', Trigger)
 arming = rospy.ServiceProxy('mavros/cmd/arming', CommandBool)
 
+# Safety check for the error of throttling speed
 shared.safety_check(get_telemetry, arming)
+
+target_x = 2
+target_y = 1
 
 print("Starting the task after:")
 count_down(3)
-print("Height: ~2.5m")
-navigate(x=0, y=0, z=settings.VIEW_HIGHT, speed=settings.SPEED, frame_id='body', auto_arm=True)
-#shared.wait_till_arrive(get_telemetry, 0, 0, settings.VIEW_HIGHT, 'map')
+print("Height: ~1.5m")
+navigate(x=0, y=0, z=1.5, speed=settings.SPEED, frame_id='body', auto_arm=True)
+#shared.wait_till_arrive(get_telemetry, 0, 0, 1.5, 'aruco_map',1)
 count_down(3)
-print("Height: 2m move to ArUco (5,3)")
-navigate(x=3, y=3, z=settings.VIEW_HIGHT, speed=settings.SPEED, frame_id='aruco_map')
-shared.wait_till_arrive(get_telemetry, 3, 3, settings.VIEW_HIGHT)
-# count_down(3)
 
+current_pos = get_telemetry("aruco_map")
+navigate(x=current_pos.x, y=current_pos.y, z=current_pos.z, speed=settings.SPEED, frame_id='aruco_map')
+shared.wait_till_arrive(get_telemetry,  current_pos.x, current_pos.y, current_pos.z)
+
+current_pos = get_telemetry("aruco_map")
+print("Height: 1.5m move to ArUco (2,1)")
+navigate(x=(current_pos.x)+1, y=(current_pos.y)+1, z=current_pos.z, speed=settings.SPEED, frame_id='aruco_map')
+shared.wait_till_arrive(get_telemetry, current_pos.x+1, current_pos.y+1, current_pos.z)
+#count_down(3)
+target_x += 1
 # TODO: Test navigate in not passing some parameters
-#navigate(x=4, z=2, speed=0.5, frame_id='aruco_map')
+#navigate(x=target_x, z=settings.VIEW_HIGHT, speed=settings.SPEED, frame_id='aruco_map')
 # TODO: Test navigate with passing the paremeter as it is
-#navigate(x=x, y=3, z=2, speed=0.5, frame_id='aruco_map')
+#navigate(x=x, y=target_y, z=settings.VIEW_HIGHT, speed=settings.SPEED, frame_id='aruco_map')
 
 # TODO: To find out how to know the position of the x and y in aruco markers from navigate not from stroing inside the program
 
+print("Landing")
 
 res = land()
-shared.wait_till_arrive(get_telemetry, 0, 0, 0, 'body')
+#shared.wait_till_arrive(get_telemetry, 0, 0, 0, 'body')
 
 
 if(res.success):
