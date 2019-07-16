@@ -5,9 +5,9 @@ var pc = new RTCPeerConnection({
 // connect audio / video
 pc.addEventListener('track', function(evt) {
     if (evt.track.kind == 'video') {
-        document.getElementById('video').srcObject = evt.streams[0];
+        // document.getElementById('video').srcObject = evt.streams[0];
     } else {
-        document.getElementById('audio').srcObject = evt.streams[0];
+        // document.getElementById('audio').srcObject = evt.streams[0];
     }
 });
 
