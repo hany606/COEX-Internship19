@@ -6,6 +6,9 @@ import os
 import platform
 import ssl
 
+from IPython.display import display, Javascript
+from google.colab.output import eval_js
+from google.colab.patches import cv2_imshow
 
 from aiohttp import web
 import cv2
@@ -30,9 +33,7 @@ class VideoTransformTrack(VideoStreamTrack):
         # perform edge detection
         img = frame.to_ndarray(format="bgr24")
         img = process(img)
-        cv2.imshow('frame',img)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            cv2.destroyAllWindows()
+        cv2_imshow(img)
         # rebuild a VideoFrame, preserving timing information
         new_frame = VideoFrame.from_ndarray(img, format="bgr24")
         new_frame.pts = frame.pts
@@ -46,6 +47,8 @@ async def index(request):
 
 async def javascript(request):
     content = open(os.path.join(ROOT, "client.js"), "r").read()
+    display(content)
+    data = eval_js('start()')
     return web.Response(content_type="application/javascript", text=content)
 
     
@@ -107,4 +110,7 @@ if __name__ == "__main__":
     app.router.add_get("/", index)
     app.router.add_get("/client.js", javascript)
     app.router.add_post("/offer", offer)
-    web.run_app(app, port=8080, ssl_context=ssl_context)
+    port = portpicker.pick_unused_port()
+#     port = 20248
+    print("Runnign on port: {:}".format(port))
+    web.run_app(app, host= '0.0.0.0',port= port, ssl_context=ssl_context)
