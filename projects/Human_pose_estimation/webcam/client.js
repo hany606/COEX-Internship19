@@ -53,14 +53,10 @@ function negotiate() {
 }
 
 function start() {
-    document.getElementById('start').style.display = 'none';
     negotiate();
-    document.getElementById('stop').style.display = 'inline-block';
 }
 
 function stop() {
-    document.getElementById('stop').style.display = 'none';
-
     // close peer connection
     setTimeout(function() {
         pc.close();
