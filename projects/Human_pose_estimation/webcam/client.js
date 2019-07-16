@@ -53,6 +53,7 @@ function negotiate() {
 }
 
 function start() {
+    console.log("START")
     negotiate();
 }
 

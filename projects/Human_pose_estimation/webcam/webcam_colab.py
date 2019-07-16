@@ -5,10 +5,7 @@ import logging
 import os
 import platform
 import ssl
-
-from IPython.display import display, Javascript
-from google.colab.output import eval_js
-from google.colab.patches import cv2_imshow
+import portpicker
 
 from aiohttp import web
 import cv2
@@ -17,8 +14,15 @@ from av import VideoFrame
 from aiortc import RTCPeerConnection, RTCSessionDescription, VideoStreamTrack
 from aiortc.contrib.media import MediaPlayer
 
-ROOT = os.path.dirname(__file__)
 
+
+from IPython.display import display, Javascript
+from google.colab.output import eval_js
+from google.colab.patches import cv2_imshow
+
+# ROOT = os.path.dirname(__file__)
+ROOT = "/content/COEX-Internship19/projects/Human_pose_estimation/webcam"
+#openpose/build/examples/tutorial_api_python/
 
 def process(frame):
     return frame
