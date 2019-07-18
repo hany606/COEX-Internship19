@@ -26,7 +26,6 @@ class VideoTransformTrack(VideoStreamTrack):
 
     async def recv(self):
         frame = await self.track.recv()
-        print("Recev")
         # perform edge detection
         img = frame.to_ndarray(format="bgr24")
         img = process(img)
@@ -51,18 +50,24 @@ async def javascript(request):
     
 async def offer(request):
     params = await request.json()
+    print(type(params['sdp']))
+    print(params['sdp'])
+    print("------------------------")
+    print(params['type'])
     offer = RTCSessionDescription(sdp=params["sdp"], type=params["type"])
-
+    # print(offer)
     pc = RTCPeerConnection()
+    
     pcs.add(pc)
-
+    print("pcs add")
     @pc.on("iceconnectionstatechange")
     async def on_iceconnectionstatechange():
+        print("ice")
         print("ICE connection state is %s" % pc.iceConnectionState)
         if pc.iceConnectionState == "failed":
             await pc.close()
             pcs.discard(pc)
-
+    print("after")
     # open webcam
     options = {"framerate": "30", "video_size": "640x480"}
     if platform.system() == "Darwin":
@@ -108,3 +113,4 @@ if __name__ == "__main__":
     app.router.add_get("/client.js", javascript)
     app.router.add_post("/offer", offer)
     web.run_app(app, port=8080, ssl_context=ssl_context)
+    print("Finished")
