@@ -6,6 +6,11 @@ import tornado.ioloop
 import tornado.web
 import json
 import math
+import imp
+
+shared = imp.load_source('settings', '../../libs/settings.py')
+settings = imp.load_source('settings', '../../libs/settings.py')
+
 
 #Tornado Folder Paths
 settings = dict(
@@ -15,7 +20,22 @@ settings = dict(
 
 #Tonado server port
 PORT = 8091
-initial_pose = False 
+initial_pose_flag = False
+action_transition_flag = False
+x,y,z = 0,0,0
+
+poses_config_thresh = 5
+poses_config =[
+     {"limits":[{"min": 110-poses_config_thresh, "max": 130+poses_config_thresh}], "name": "Forward",  "joints": ["left_elbow"],    "num_joints": 1}
+    ,{"limits":[{"min": 50-poses_config_thresh,  "max": 70+poses_config_thresh}],  "name": "Backward", "joints": ["left_elbow"],    "num_joints": 1}
+    ,{"limits":[{"min": 130-poses_config_thresh, "max": 150+poses_config_thresh}], "name": "Right",    "joints": ["right_elbow"],   "num_joints": 1}
+    ,{"limits":[{"min": 30-poses_config_thresh,  "max": 50+poses_config_thresh}],  "name": "Left",     "joints": ["right_elbow"],   "num_joints": 1}
+    ,{"limits":[{"min": 130-poses_config_thresh, "max": 150+poses_config_thresh}], "name": "Up",       "joints": ["right_shoulder"], "num_joints": 1}
+    ,{"limits":[{"min": 50-poses_config_thresh,  "max": 70+poses_config_thresh}],  "name": "Down",     "joints": ["right_shoulder"], "num_joints": 1}
+    #for multiple joints:
+    #{[{"min": , "max": ,...}]}
+]
+
 
 def get_distance(p1, p2):
     return(math.sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2))
@@ -67,66 +87,90 @@ def check_keypoints_existance(skeleton):
     left_hip_score      = skeleton[11]["score"]
 
     flags_counter = 0
-    if(right_shoulder_score > 90):
+    score_thresh = 0.5
+    num_needed_keypoints = 6
+    if(right_shoulder_score > score_thresh):
         flags_counter += 1
     else:
-        print("Right Shoulder is not here, try to move back and empty background for more accuraccy")
+        print("Right Shoulder is not here, score{:}".format(right_shoulder_score))
     
-    if(right_elbow_score > 90):
+    if(right_elbow_score > score_thresh):
         flags_counter += 1
     else:
-        print("Right elbow is not here, try to move back and empty background for more accuraccy")
+        print("Right elbow is not here, score{:}".format(right_elbow_score))
 
-    if(right_wrist_score > 90):
+    if(right_wrist_score > score_thresh):
         flags_counter += 1
     else:
-        print("Right Wrist is not here, try to move back and empty background for more accuraccy")
+        print("Right Wrist is not here, score{:}".format(right_wrist_score))
     
-    if(left_shoulder_score > 90):
+    if(left_shoulder_score > score_thresh):
         flags_counter += 1
     else:
-        print("Left Shoulder is not here, try to move back and empty background for more accuraccy")
+        print("Left Shoulder is not here, score{:}".format(left_shoulder_score))
     
-    if(left_elbow_score > 90):
+    if(left_elbow_score > score_thresh):
         flags_counter += 1
     else:
-        print("Left elbow is not here, try to move back and empty background for more accuraccy")
+        print("Left elbow is not here, score{:}".format(left_elbow_score))
 
-    if(left_wrist_score > 90):
+    if(left_wrist_score > score_thresh):
         flags_counter += 1
     else:
-        print("Left Wrist is not here, try to move back and empty background for more accuraccy")
+        print("Left Wrist is not here, score{:}".format(left_wrist_score))
 
-    if(flags_counter == 4):
+    if(flags_counter == num_needed_keypoints):
         return 1
+    else:
+        print("Try to move back and empty background for more accuraccy")
     return 0
     
 def check_initial_pose(angles):
-    threshold = 5
+    threshold = 10
     flags_counter = 0
     if(angles["right_shoulder"] < 90+threshold and angles["right_shoulder"] > 90-threshold):
         flags_counter += 1
     else:
-        print("Right Shoulder angle is not correct, try it to make it 90, it is now{:}".format(angles["right_shoulder"]))
+        print("Right Shoulder angle is not correct, current: {:}".format(angles["right_shoulder"]))
 
     if(angles["right_elbow"] < 90+threshold and angles["right_elbow"] > 90-threshold):
         flags_counter += 1
     else:
-        print("Right Elbow angle is not correct, try it to make it 90, it is now{:}".format(angles["right_elbow"]))
+        print("Right Elbow angle is not correct, current: {:}".format(angles["right_elbow"]))
 
     if(angles["left_shoulder"] < 90+threshold and angles["left_shoulder"] > 90-threshold):
         flags_counter += 1
     else:
-        print("Left Shoulder angle is not correct, try it to make it 90, it is now{:}".format(angles["left_shoulder"]))
+        print("Left Shoulder angle is not correct, current: {:}".format(angles["left_shoulder"]))
 
     if(angles["left_elbow"] < 90+threshold and angles["left_elbow"] > 90-threshold):
         flags_counter += 1
     else:
-        print("Left Elbow angle is not correct, try it to make it 90, it is now{:}".format(angles["left_elbow"]))
+        print("Left Elbow angle is not correct, current: {:}".format(angles["left_elbow"]))
 
     if(flags_counter == 4):
         return 1
     return 0
+
+# Now it defines pose at once, it will recognize poses together by returning a list of poses
+def recognize_pose(angles):
+    #{"limits":[{"min": 100-poses_config_thresh, "max": 120+poses_config_thresh}], "name": "Forward",  "joints": ["left_elbow"],    "num_joints": 1},
+    for i,pose in enumerate(poses_config):
+        pose_counter_flag = 0
+        for x in range(len(pose["limits"])):
+            joint = pose["joints"][x]
+            min_limit = pose["limits"][x]["min"]
+            max_limit = pose["limits"][x]["max"]
+            print("Joint: {:}, current: {:}".format(joint, angles[joint]))
+            if(angles[joint] >= min_limit and angles[joint] <= max_limit):
+                pose_counter_flag += 1
+                print("Satisfied")
+        if(pose_counter_flag == pose["num_joints"]):
+            return i+1
+    return 0
+
+
+
 def main(data):
     '''
     Example:
@@ -151,28 +195,79 @@ def main(data):
      {"score":0.015715690329670906,"part":"rightAnkle","position":{"x":238.2701501512342,"y":470.4443430622265}}
      ]}]
     '''
-    order = 0
-    data_json = json.loads(data)
-    # keypoints of interest are rightShoulder(6), rightElbow(8), rightWrist(10), rightHip(12) and leftShoulder(5), rightElbow(7), rightWrist(9), leftHip(11)
+    data_json = json.loads(data.encode("utf-8"))
+    if(len(data_json) == 0):
+        print("No person in the image")
+        return 0
+    # print(data_json[0]["keypoints"])
+    # print(data_json)
     # Check if all the keypoints are visible by the score
-    check_keypoints_existance(data_json)
-    # Check if initial pose was done or not yet
-    angles = calc_angles(data_json)
-    if(not(initial_pose)):
-        # Order the user to make the initial pose L shape for the arms
-        print("Please do the initial position to make your arms like L shape as it is described in the repo")
-        # Check the pose
-        if(check_initial_pose(angles)):
-            global initial_pose
-            initial_pose = True
+    keypoints = data_json[0]["keypoints"]
+    keypoints_existance_flag = check_keypoints_existance(keypoints)
+    if(keypoints_existance_flag):  
+        # Check if initial pose was done or not yet
+        angles = calc_angles(keypoints)
+        if(not(initial_pose_flag)):
+            # Order the user to make the initial pose L shape for the arms
+            # Check the pose
+            print("[Status]: Detecting initial  ################")
+            if(check_initial_pose(angles)):
+                global initial_pose_flag
+                global action_transition_flag
+                initial_pose_flag = True
+                action_transition_flag = False
+                print("############# Successfully done the initial pose #############")
+                print("initial pose has been done Hooray!! :)")
+
+        else:
+            angles = calc_angles(keypoints)
+            pose = recognize_pose(angles)
+            print("[Status]: Detecting pose $$$$$$$$$$$$$")
+            if(not(action_transition_flag)):
+                # Now it will be with discrete actions and values but after that it will be related to a vector of motion related to the angles
+                global x
+                global y
+                global z
+                if(pose > 0):
+                    global action_transition_flag
+                    action_transition_flag = True
+                if(pose == 1):
+                    print("Forward")
+                    y += 1
+                elif(pose == 2):
+                    print("Backward")
+                    y -= 1
+                elif(pose == 3):
+                    print("Right")
+                    x += 1
+                elif(pose == 4):
+                    print("Left")
+                    x -= 1
+                elif(pose == 5):
+                    print("Up")
+                    z += 1
+                elif(pose == 6):
+                    print("Down")
+                    z -= 1
+                else:
+                    print("Undefined Behaviour")
+
+            else:
+                print("[Status]: Transition stage")
+                print("Go to the initial pose again")
+                global initial_pose_flag
+                initial_pose_flag = False
     else:
-        # check the score of them to change position
+        print("[Status]: Detecting keypoints ******************")
+
 class WSHandler(tornado.websocket.WebSocketHandler):
   def open(self):
     print ('[WS] Connection was opened.')
  
   def on_message(self, message):
-    #print (('[WS] Incoming message:'), message)
+    # print (('[WS] Incoming message:'), message)
+    # Check if the drone should move or not, finished the last task or not
+    # if()
     main(message)
   def on_close(self):
     print ('[WS] Connection was closed.')
@@ -189,8 +284,13 @@ if __name__ == "__main__":
         main_loop = tornado.ioloop.IOLoop.instance()
 
         print ("Tornado Server started")
+        print("Please do the initial position to make your arms like L shape as it is described in the repo and wait")
         main_loop.start()
 
     except:
         print ("Exception triggered - Tornado Server stopped.")
+        global x
+        global y
+        global z
+        print(x,y,z)
 
