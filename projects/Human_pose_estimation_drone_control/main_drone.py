@@ -7,9 +7,37 @@ import tornado.web
 import json
 import math
 import imp
+# import them here too in order to prevent syntacticly errors -Need to be checked again if there is errors or not
+import rospy
+from clever import srv
+from std_srvs.srv import Trigger
+from mavros_msgs.srv import CommandBool
+from std_msgs.msg import String
 
 shared = imp.load_source('settings', '../../libs/settings.py')
 settings = imp.load_source('settings', '../../libs/settings.py')
+cleverMove = imp.load_source('cleverMove', '../../libs/cleverMove.py')
+
+
+rospy.init_node("HPE_drone_node") # name of your ROS node
+
+# Creating proxies to all services
+get_telemetry = rospy.ServiceProxy('get_telemetry', srv.GetTelemetry)
+navigate = rospy.ServiceProxy('navigate', srv.Navigate)
+navigate_global = rospy.ServiceProxy('navigate_global', srv.NavigateGlobal)
+set_position = rospy.ServiceProxy('set_position', srv.SetPosition)
+set_velocity = rospy.ServiceProxy('set_velocity', srv.SetVelocity)
+set_attitude = rospy.ServiceProxy('set_attitude', srv.SetAttitude)
+set_rates = rospy.ServiceProxy('set_rates', srv.SetRates)
+land = rospy.ServiceProxy('land', Trigger)
+arming = rospy.ServiceProxy('mavros/cmd/arming', CommandBool)
+shared.safety_check(get_telemetry, arming)
+
+
+target_x = 3
+target_y = 3
+target_z = 0
+out_flag = 0
 
 
 #Tornado Folder Paths
@@ -20,14 +48,17 @@ settings = dict(
 
 #Tonado server port
 PORT = 8091
+
+
 initial_pose_flag = False
 action_transition_flag = False
-x,y,z = 0,0,0
+doing_task_flag = False
+# x,y,z = 0,0,0
 
 poses_config_thresh = 5
 poses_config =[
-     {"limits":[{"min": 110-poses_config_thresh, "max": 130+poses_config_thresh}], "name": "Forward",  "joints": ["left_elbow"],    "num_joints": 1}
-    ,{"limits":[{"min": 50-poses_config_thresh,  "max": 70+poses_config_thresh}],  "name": "Backward", "joints": ["left_elbow"],    "num_joints": 1}
+     {"limits":[{"min": 130-poses_config_thresh, "max": 150+poses_config_thresh}], "name": "Forward",  "joints": ["left_elbow"],    "num_joints": 1}
+    ,{"limits":[{"min": 40-poses_config_thresh,  "max": 60+poses_config_thresh}],  "name": "Backward", "joints": ["left_elbow"],    "num_joints": 1}
     ,{"limits":[{"min": 130-poses_config_thresh, "max": 150+poses_config_thresh}], "name": "Right",    "joints": ["right_elbow"],   "num_joints": 1}
     ,{"limits":[{"min": 30-poses_config_thresh,  "max": 50+poses_config_thresh}],  "name": "Left",     "joints": ["right_elbow"],   "num_joints": 1}
     ,{"limits":[{"min": 130-poses_config_thresh, "max": 150+poses_config_thresh}], "name": "Up",       "joints": ["right_shoulder"], "num_joints": 1}
@@ -201,9 +232,26 @@ def main(data):
         return 0
     # print(data_json[0]["keypoints"])
     # print(data_json)
-    # Check if all the keypoints are visible by the score
+    if(doing_task_flag):
+        print("[Status]: Doing the task TTTTTTTT")
+        # for i in range(5+1):
+        #     print("{:}...".format(5-i))
+        #     sleep(1)
+        global target_x
+        global target_y
+        global get_telemetry
+        cleverMove.move(target_x,target_y,get_telemetry)
+        doing_task_flag = False
+        print("[Status]: Task is done")
+        return 1
     keypoints = data_json[0]["keypoints"]
+    # Check if all the keypoints are visible by the score
     keypoints_existance_flag = check_keypoints_existance(keypoints)
+    global target_x
+    global target_y
+    global target_z
+    print("[Status]: Current Drone Position ({:},{:},{:})".format(target_x,target_y,target_z))
+
     if(keypoints_existance_flag):  
         # Check if initial pose was done or not yet
         angles = calc_angles(keypoints)
@@ -225,38 +273,41 @@ def main(data):
             print("[Status]: Detecting pose $$$$$$$$$$$$$")
             if(not(action_transition_flag)):
                 # Now it will be with discrete actions and values but after that it will be related to a vector of motion related to the angles
-                global x
-                global y
-                global z
-                if(pose > 0):
-                    global action_transition_flag
-                    action_transition_flag = True
+                global target_x
+                global target_y
+                global target_z
                 if(pose == 1):
-                    print("Forward")
-                    y += 1
+                    print("---------->Forward")
+                    target_y += 1
                 elif(pose == 2):
-                    print("Backward")
-                    y -= 1
+                    print("---------->Backward")
+                    target_y -= 1
                 elif(pose == 3):
-                    print("Right")
-                    x += 1
+                    print("---------->Right")
+                    target_x += 1
                 elif(pose == 4):
-                    print("Left")
-                    x -= 1
+                    print("---------->Left")
+                    target_x -= 1
                 elif(pose == 5):
-                    print("Up")
-                    z += 1
+                    print("---------->Up")
+                    # target_z += 1
                 elif(pose == 6):
-                    print("Down")
-                    z -= 1
+                    print("---------->Down")
+                    # target_z -= 1
                 else:
                     print("Undefined Behaviour")
-
+                
+                if(pose > 0):
+                    print("[Status]: Action transition stage triggered")
+                    global action_transition_flag
+                    action_transition_flag = True
             else:
                 print("[Status]: Transition stage")
                 print("Go to the initial pose again")
                 global initial_pose_flag
+                global doing_task_flag
                 initial_pose_flag = False
+                doing_task_flag = True
     else:
         print("[Status]: Detecting keypoints ******************")
 
@@ -283,14 +334,25 @@ if __name__ == "__main__":
         http_server.listen(PORT)
         main_loop = tornado.ioloop.IOLoop.instance()
 
-        print ("Tornado Server started")
+        print ("---- Drone going to origin ----")
+        global get_telemetry
+        cleverMove.take_off(get_telemetry)
+        global target_z
+        target_z = settings.VIEW_HIGHT
+        cleverMove.move(target_x,target_y,get_telemetry)
+        print("Now you can start")
         print("Please do the initial position to make your arms like L shape as it is described in the repo and wait")
+        print ("Tornado Server started")
         main_loop.start()
 
     except:
         print ("Exception triggered - Tornado Server stopped.")
-        global x
-        global y
-        global z
-        print(x,y,z)
+        global land
+        global arming
+        cleverMove.land(land, arming)
+        global target_x
+        global target_y
+        global target_z
+        target_z = 0
+        print(target_x,target_y,target_z)
 
