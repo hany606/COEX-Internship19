@@ -11,7 +11,7 @@ In this project, there have been many trials to estimate the human pose by using
 - All the failed trials in a folder in the project, you can fork this repo and try to implement them and write us your results. 
 - Then after a recommendation from a person from Innopolis AI community, we used the posenet from tensorflow.js as it is easier, faster and easy build. You can find the work of posenet for this project [here](https://github.com/hany606/tfjs-posenet).
 
-## Setup (How to use this project):
+## Setup:
 ### In your main laptop
 #### (It has been tested until now on Ubuntu 18.04)
 - Clone the repo of posenet in your computer
@@ -22,7 +22,14 @@ git clone https://github.com/hany606/tfjs-posenet.git
 
 ### In the raspberry pi of the drone (Main controller)
 - Access the raspberry pi
-- [Switch to Client mode](https://clever.copterexpress.com/en/network.html) and ensure that the network has internet connection.
+- [Switch to Client mode](https://clever.copterexpress.com/en/network.html) and ensure that the network has internet connection. 
+
+Notice: I have already made a bash script based on that tutorial, it is in COEX-Internship19/helpers/ called .to_client.bash
+To run it:
+```sh
+chmod +x .to_client.bash
+./.to_client <NAME_OF_NETWORK> <PASSWORD>
+```
 - Install the tornado library to make a websocket server
 ```sh
 sudo pip install tornado
@@ -44,3 +51,6 @@ python websocket_server_test.py
 ```sh
 python main_drone.py
 ```
+
+## How to use it?
+- Run the server first from the raspberry pi
