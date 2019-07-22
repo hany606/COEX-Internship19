@@ -26,8 +26,9 @@ def take_off(get_telemetry,navigate):
     print("Height: ~{:}m".format(settings.VIEW_HIGHT))
     navigate(z=settings.VIEW_HIGHT, speed=settings.SPEED, frame_id='body', auto_arm=True)
     shared.wait_till_arrive(get_telemetry, 0, 0, start_pos.z+settings.VIEW_HIGHT, 'map',1)
-
+    #shared.count_down(2)
 def move(target_x, target_y, get_telemetry,navigate):
     current_pos = get_telemetry(frame_id='aruco_map')
     navigate(x=target_x, y=target_y, z=current_pos.z, yaw=float('nan'), speed=settings.SPEED, frame_id='aruco_map')
     shared.wait_till_arrive(get_telemetry, target_x, target_y, current_pos.z)
+    #shared.count_down(2)

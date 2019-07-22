@@ -14,9 +14,13 @@ from std_srvs.srv import Trigger
 from mavros_msgs.srv import CommandBool
 from std_msgs.msg import String
 
-shared = imp.load_source('settings', '../../libs/settings.py')
-settings = imp.load_source('settings', '../../libs/settings.py')
-cleverMove = imp.load_source('cleverMove', '../../libs/cleverMove.py')
+import shared
+import settings
+import cleverMove
+
+# shared = imp.load_source('shared', '../../libs/shared.py')
+# settings = imp.load_source('settings', '../../libs/settings.py')
+# cleverMove = imp.load_source('cleverMove', '../../libs/cleverMove.py')
 
 
 rospy.init_node("HPE_drone_node") # name of your ROS node
@@ -34,8 +38,8 @@ arming = rospy.ServiceProxy('mavros/cmd/arming', CommandBool)
 shared.safety_check(get_telemetry, arming)
 
 
-target_x = 3
-target_y = 3
+target_x = 1
+target_y = 6
 target_z = 0
 out_flag = 0
 
@@ -240,7 +244,7 @@ def main(data):
         global target_x
         global target_y
         global get_telemetry
-        cleverMove.move(target_x,target_y,get_telemetry)
+        cleverMove.move(target_x,target_y,get_telemetry,navigate)
         doing_task_flag = False
         print("[Status]: Task is done")
         return 1
@@ -336,10 +340,12 @@ if __name__ == "__main__":
 
         print ("---- Drone going to origin ----")
         global get_telemetry
-        cleverMove.take_off(get_telemetry)
-        global target_z
-        target_z = settings.VIEW_HIGHT
-        cleverMove.move(target_x,target_y,get_telemetry)
+        global navigate
+        cleverMove.take_off(get_telemetry,navigate)
+        #global target_z
+        #target_z = settings.VIEW_HIGHT
+        print("test")
+        cleverMove.move(target_x,target_y,get_telemetry,navigate)
         print("Now you can start")
         print("Please do the initial position to make your arms like L shape as it is described in the repo and wait")
         print ("Tornado Server started")
@@ -349,7 +355,7 @@ if __name__ == "__main__":
         print ("Exception triggered - Tornado Server stopped.")
         global land
         global arming
-        cleverMove.land(land, arming)
+        cleverMove.drone_land(land, arming)
         global target_x
         global target_y
         global target_z
