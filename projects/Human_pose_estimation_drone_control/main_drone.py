@@ -1,4 +1,3 @@
-#! /usr/bin/python
 import os.path
 import tornado.httpserver
 import tornado.websocket
@@ -7,6 +6,8 @@ import tornado.web
 import json
 import math
 import imp
+import signal
+import sys
 # import them here too in order to prevent syntacticly errors -Need to be checked again if there is errors or not
 import rospy
 from clever import srv
@@ -14,7 +15,7 @@ from std_srvs.srv import Trigger
 from mavros_msgs.srv import CommandBool
 from std_msgs.msg import String
 
-import shared
+import util
 import settings
 import cleverMove
 
@@ -35,23 +36,23 @@ set_attitude = rospy.ServiceProxy('set_attitude', srv.SetAttitude)
 set_rates = rospy.ServiceProxy('set_rates', srv.SetRates)
 land = rospy.ServiceProxy('land', Trigger)
 arming = rospy.ServiceProxy('mavros/cmd/arming', CommandBool)
-shared.safety_check(get_telemetry, arming)
+util.safety_check(get_telemetry, arming)
 
 
-target_x = 1
-target_y = 6
+target_x = 2
+target_y = 5
 target_z = 0
 out_flag = 0
 
 
 #Tornado Folder Paths
-settings = dict(
+tornado_settings = dict(
 	template_path = os.path.join(os.path.dirname(__file__), "templates"),
 	static_path = os.path.join(os.path.dirname(__file__), "static")
 	)
 
 #Tonado server port
-PORT = 8091
+PORT = 8093
 
 
 initial_pose_flag = False
@@ -72,6 +73,11 @@ poses_config =[
 ]
 
 
+def signalHandler(signal, frame):
+    print("Ctrl+C is pressed")
+    print("Drone is being landed")
+    cleverMove.drone_land(land, arming)
+    sys.exit(0)
 def get_distance(p1, p2):
     return(math.sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2))
 def to_degree(theta):
@@ -243,8 +249,20 @@ def main(data):
         #     sleep(1)
         global target_x
         global target_y
+        global target_z
         global get_telemetry
-        cleverMove.move(target_x,target_y,get_telemetry,navigate)
+        if(target_z == 1):
+            cleverMove.take_off(get_telemetry,navigate)
+            print("[Status]: Drone take off")
+        elif(target_z == 0):
+            global land
+            global arming
+            cleverMove.drone_land(land, arming)
+            print("[Status]: Drone landed")
+        else:
+            cleverMove.move(target_x,target_y,get_telemetry,navigate)
+        global target_z
+        target_z = -1
         doing_task_flag = False
         print("[Status]: Task is done")
         return 1
@@ -294,10 +312,10 @@ def main(data):
                     target_x -= 1
                 elif(pose == 5):
                     print("---------->Up")
-                    # target_z += 1
+                    target_z = 1
                 elif(pose == 6):
                     print("---------->Down")
-                    # target_z -= 1
+                    target_z = 0
                 else:
                     print("Undefined Behaviour")
                 
@@ -329,7 +347,9 @@ class WSHandler(tornado.websocket.WebSocketHandler):
   def check_origin(self,origin):
     return True
 
-application = tornado.web.Application([(r'/ws', WSHandler)], **settings)
+application = tornado.web.Application([(r'/ws', WSHandler)], **tornado_settings)
+
+signal.signal(signal.SIGINT, signalHandler) # Activate the listen to the Ctrl+C
 
 
 if __name__ == "__main__":
@@ -339,13 +359,12 @@ if __name__ == "__main__":
         main_loop = tornado.ioloop.IOLoop.instance()
 
         print ("---- Drone going to origin ----")
-        global get_telemetry
-        global navigate
-        cleverMove.take_off(get_telemetry,navigate)
-        #global target_z
-        #target_z = settings.VIEW_HIGHT
-        print("test")
-        cleverMove.move(target_x,target_y,get_telemetry,navigate)
+        # global get_telemetry
+        # global navigate
+        # cleverMove.take_off(get_telemetry,navigate)
+        # global target_z
+        # target_z = settings.VIEW_HIGHT
+        # cleverMove.move(target_x,target_y,get_telemetry,navigate)
         print("Now you can start")
         print("Please do the initial position to make your arms like L shape as it is described in the repo and wait")
         print ("Tornado Server started")
