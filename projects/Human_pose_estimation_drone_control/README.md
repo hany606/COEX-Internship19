@@ -1,5 +1,7 @@
 # Human Pose Estimation drone control Project
 
+[![Video demo for the project (NOT available yet)](img)](link)
+
 This project is about to control clever4 drone from [Copter Express company](https://copterexpress.com/) by different human poses.
 In this project, there have been many trials to estimate the human pose by using:
 
