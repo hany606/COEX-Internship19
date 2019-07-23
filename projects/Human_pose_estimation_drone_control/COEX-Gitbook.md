@@ -19,6 +19,7 @@ We used posenet from tensorflow.js as our human pose estimation module because i
 
 The image below is a visualization of our architecture for the project.
 ![Architecture](https://github.com/hany606/COEX-Internship19/blob/master/projects/Human_pose_estimation_drone_control/architecture.png)
+
 This figure is made from [here](https://www.draw.io/)
 
 ## Dependencies
