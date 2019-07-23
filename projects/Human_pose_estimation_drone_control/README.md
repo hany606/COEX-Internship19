@@ -13,6 +13,11 @@ In this project, there have been many trials to estimate the human pose by using
 - All the failed trials in a folder in the project, you can fork this repo and try to implement them and write us your results.
 - Then after a recommendation from someone from Innopolis AI community, we used the posenet from tensorflow.js as it is easier, faster and easy build. You can find the work of posenet for this project [here](https://github.com/hany606/tfjs-posenet).
 
+## Architecture
+
+![Architecture](https://github.com/hany606/COEX-Internship19/blob/master/projects/Human_pose_estimation_drone_control/architecture.png)
+This figure is made by `https://www.draw.io/`
+
 ## Setup & installation
 
 ### In your main laptop
