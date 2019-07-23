@@ -84,6 +84,5 @@ or refresh the page if you already run it.
 - Control drone that draw graffiti using human poses and draw in realtime.
 - Playing with balls like pingpong game with the drones. It may requires 3D Human Pose estimation Algorithms.
 - Control two drones by your arms and do some task together.
-
-These ideas were produced by me and my internship supervisor Timofey.
+- These ideas were thoughts of myself and my internship supervisor Timofey.
 
