@@ -17,7 +17,7 @@ In this project, there have been many trials to estimate the human pose by using
 
 ![Architecture](https://github.com/hany606/COEX-Internship19/blob/master/projects/Human_pose_estimation_drone_control/architecture.png)
 
-This figure is made by https://www.draw.io/
+This figure is made by [here](https://www.draw.io/)
 
 ## Setup & installation
 
@@ -123,11 +123,12 @@ Animation is created by [this](https://justsketchme.web.app/)
 - Control two drones by your arms and do some task together.
 - These ideas were thoughts of myself and my internship supervisor Timofey.
 
-## References
 
-- https://blog.nanonets.com/human-pose-estimation-2d-guide/
-- https://clever.copterexpress.com/en/
-- https://github.com/tensorflow/tfjs-models/tree/master/posenet
-- https://medium.com/tensorflow/real-time-human-pose-estimation-in-the-browser-with-tensorflow-js-7dd0bc881cd5
-- https://www.tensorflow.org/js/demos
-- https://www.tensorflow.org/lite/models/pose_estimation/overview
+## References:
+
+- [Human pose estimation guide](https://blog.nanonets.com/human-pose-estimation-2d-guide/)
+- [Clever drones tutorials](https://clever.copterexpress.com/en/)
+- [Posenet Github repo](https://github.com/tensorflow/tfjs-models/tree/master/posenet)
+- [Posenet meduim article](https://medium.com/tensorflow/real-time-human-pose-estimation-in-the-browser-with-tensorflow-js-7dd0bc881cd5)
+- [Tensorflow.js demos](https://www.tensorflow.org/js/demos)
+- [Posenet overview](https://www.tensorflow.org/lite/models/pose_estimation/overview)
