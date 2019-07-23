@@ -54,7 +54,11 @@ python main_drone.py
 
 ## How to use it?
 - Run the server first from the raspberry pi
-- Run Human pose estimation module on your laptop or refresh the page if you already run it.
+- Run Human pose estimation module on your laptop with websocket by
+```sh
+yarn websocket
+```
+or refresh the page if you already run it.
 - You should see the instructions on the screen of the terminal of the raspberry pi right now.
 - First you should do initial pose as it is described in the images below.
 - You can perform any pose and try to keep it until your drone finish doing this move that is coressponding to the pose.
@@ -62,3 +66,23 @@ python main_drone.py
 
 ## Poses:
 ![Poses](https://github.com/hany606/COEX-Internship19/blob/master/projects/Human_pose_estimation_drone_control/Poses.jpg)
+
+## Notes:
+- Websockets are used to communicate between the page on the browser and the drone.
+- As the model of posenet is already pretrained and using tensorflow.js. So, it is quite fast and can run on different computers without any problems thanks to yarn, parcel and tensorflow.js and we have configured the code of posenet to the minimal configuration to not require a lot of computation power.
+- This project has been built in 1 week of working, it took a lot of time trying to make openpose and google colab working but unfortunatly I had many errors and one I decided to move to posenet everything was pretty easy.
+- If you have any comments about the codes to try to improve it, I will be happy if you can contact me through telegram: @hany606 or email: h.hamed.elanwar@gmail.com or do pull requests.
+
+## Future improvements
+- Avoid using the global variables [].
+- Test it on different hardwars and OS [].
+- Adding more poses [].
+- Add takeoff and land by the poses [].
+
+## Future application
+- [Drone wars](https://web.facebook.com/COEXDrones/photos/pcb.1129309377266616/1129308437266710/?type=3&theater): Control the drone during the drones battle using human poses. It requries high speed interaction and more precise control.
+- Control drone that draw graffiti using human poses and draw in realtime.
+- Playing with balls like pingpong game with the drones. It may requires 3D Human Pose estimation Algorithms.
+- Control two drones by your arms and do some task together.
+These ideas were produced by me and my internship supervisor Timofey.
+
