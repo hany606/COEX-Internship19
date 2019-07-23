@@ -106,6 +106,8 @@ Animation is creadted by [this](https://justsketchme.web.app/)
 - Test it on different hardwars and OS [].
 - Adding more poses [].
 - Add takeoff and land by the poses [].
+- Improve the movement of the drone over the ArUco markers [].
+- Make the drone fly not by one ArUco markers as steps but as distances as steps [].
 
 ## Future application
 
