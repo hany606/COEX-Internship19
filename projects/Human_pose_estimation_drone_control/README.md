@@ -66,7 +66,7 @@ or refresh the page if you already run it.
 
 ## Poses:
 ![Poses](https://github.com/hany606/COEX-Internship19/blob/master/projects/Human_pose_estimation_drone_control/Poses.jpg)
-
+Animation is creadted by [this](https://justsketchme.web.app/)
 ## Notes:
 - Websockets are used to communicate between the page on the browser and the drone.
 - As the model of posenet is already pretrained and using tensorflow.js. So, it is quite fast and can run on different computers without any problems thanks to yarn, parcel and tensorflow.js and we have configured the code of posenet to the minimal configuration to not require a lot of computation power.
@@ -86,3 +86,10 @@ or refresh the page if you already run it.
 - Control two drones by your arms and do some task together.
 - These ideas were thoughts of myself and my internship supervisor Timofey.
 
+## References:
+- https://blog.nanonets.com/human-pose-estimation-2d-guide/
+- https://clever.copterexpress.com/en/
+- https://github.com/tensorflow/tfjs-models/tree/master/posenet
+- https://medium.com/tensorflow/real-time-human-pose-estimation-in-the-browser-with-tensorflow-js-7dd0bc881cd5
+- https://www.tensorflow.org/js/demos
+- https://www.tensorflow.org/lite/models/pose_estimation/overview
