@@ -93,9 +93,11 @@ yarn websocket
 or refresh the page if you already run it.
 
 - You should see the instructions on the screen of the terminal of the raspberry pi right now.
-- First you should do initial pose as it is described in the images below.
+- Firstly, you should be visible for the camera and it is better to have a clear background without many details.
+- Secondly, you should do initial pose as it is described in the images below.
 - You can perform any pose and try to keep it until your drone finish doing this move that is corresponding to the pose.
 - After you do the pose return to the initial pose in order to give the drone the command to do listen to another pose.
+- If you want to stop the program land the drone and don't return to the initial pose and Ctrl+C to stop the drone.
 
 ## Poses
 
