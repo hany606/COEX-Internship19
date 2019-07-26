@@ -6,8 +6,8 @@ Human pose estimation is one of the computer vision applications in order to est
 
 ## Demo
 
-[![Video demo for the project - moving camera](https://img.youtube.com/vi/ucPONeHg2lk/0.jpg)](https://youtu.be/ucPONeHg2lk)
-[![Video demo for the project - laptop camera](https://img.youtube.com/vi/EDcTtPLxzoU/0.jpg)](https://youtu.be/EDcTtPLxzoU)
+<iframe width="770" height="421" src="https://www.youtube.com/embed/ucPONeHg2lk" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+<iframe width="853" height="480" src="https://www.youtube.com/embed/EDcTtPLxzoU" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 In the demo video, we were using Ubuntu 18.04 and clever4 drone.
 
