@@ -134,6 +134,10 @@ Animation is created by [this](https://justsketchme.web.app/)
 - Control two drones by your arms and do some task together.
 - These ideas were thoughts of myself and my internship supervisor Timofey.
 
+## Acknowledgments
+
+- This project was part of an internship in COEX in July 2019. if you found any bugs or problems, you can contact me through telegram: @hany606 or email: h.hamed.elanwar@gmail.com or do pull requests.
+
 ## References:
 
 - [Human pose estimation guide](https://blog.nanonets.com/human-pose-estimation-2d-guide/)
