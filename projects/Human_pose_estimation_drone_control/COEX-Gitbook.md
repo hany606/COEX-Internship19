@@ -5,8 +5,10 @@
 Human pose estimation is one of the computer vision applications in order to estimate all the joints and the different poses of the human body through a special camera and a special hardware or process the images from a regular camera by machine learning and deep learning techniques. This project is about controlling the drone through the poses of a person in front of regular camera without needing to external hardware or hard build dependencies.
 
 ## Demo
-
+<figure class="video_container">
 <iframe width="770" height="421" src="https://www.youtube.com/embed/ucPONeHg2lk" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+  </figure>
+
 <iframe width="853" height="480" src="https://www.youtube.com/embed/EDcTtPLxzoU" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 In the demo video, we were using Ubuntu 18.04 and clever4 drone.
