@@ -1,4 +1,7 @@
 # SLAM 
-The project was made using Jetson Nano, IntelRealsense D435 as our Depth camera and T265 as tracking model for estimating the indoor pose and odometry and its wide anlge streo camera.
+This project is about making a clever4 drone from Copter Express to perform SLAM for indoor environments.
 
-We have used until now RTAB-map for SLAM with D435 and for the integrate with them the odometry that from T265.
+The project was made using Jetson Nano, IntelRealsense D435 as our Depth camera and T265 as tracking model for estimating the indoor pose and odometry and its wide anlge streo camera.
+We have used until now RTAB-map for SLAM with D435 and integrate with them the odometry from T265.
+
+This project was a team project in the software department.
