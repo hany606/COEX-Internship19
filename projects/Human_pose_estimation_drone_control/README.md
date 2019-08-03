@@ -6,6 +6,8 @@
 
 [The documentation for the project in COEX clever Gitbook](https://clever.copterexpress.com/en/human_pose_estimation_drone_control.html?fbclid=IwAR0HNgMiuSDrjvIgc6uA3R1rvrtF_gh-6OOH2aK-ybK7Aho0_2UYn6ahE1s)
 
+[Simple presentation for the project](https://docs.google.com/presentation/d/1MQkIyJuTX0dSuL7M1l4upm8ukJD4GqyBgRZcam4Z5GM/edit?usp=sharing)
+
 This project is about to control clever4 drone from [Copter Express company](https://copterexpress.com/) by different human poses.
 In this project, there have been many trials to estimate the human pose by using:
 
