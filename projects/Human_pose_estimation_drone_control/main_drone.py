@@ -1,14 +1,22 @@
+#---------------------------------------------------
+# This code is part of this project: https://github.com/hany606/COEX-Internship19/tree/master/projects/Human_pose_estimation_drone_control 
+# Author: Hany Hamed
+# During COEX Internship July 2019
+# About: This file contains the main code of the drone
+#---------------------------------------------------
+# Importing necessary libraries for websocket server
 import os.path
 import tornado.httpserver
 import tornado.websocket
 import tornado.ioloop
 import tornado.web
+
 import json
 import math
-import imp
+
 import signal
 import sys
-# import them here too in order to prevent syntacticly errors -Need to be checked again if there is errors or not
+# import them here too in order to prevent syntacticly errors as they already imported in other modules
 import rospy
 from clever import srv
 from std_srvs.srv import Trigger
@@ -19,9 +27,42 @@ import util
 import settings
 import cleverMove
 
-# shared = imp.load_source('shared', '../../libs/shared.py')
-# settings = imp.load_source('settings', '../../libs/settings.py')
-# cleverMove = imp.load_source('cleverMove', '../../libs/cleverMove.py')
+# Global parameters of the target coordinates of the drone
+target_x = 2
+target_y = 5
+target_z = 0
+out_flag = 0    # Global flag to get out from the main loop
+
+
+#Tornado Folder Paths
+tornado_settings = dict(
+	template_path = os.path.join(os.path.dirname(__file__), "templates"),
+	static_path = os.path.join(os.path.dirname(__file__), "static")
+	)
+
+#Tonado server port
+PORT = 8093
+
+# Global flags related to the drone and the poses
+initial_pose_flag = False       # Indicate if the user is doing the initial pose or not
+action_transition_flag = False  # Indicate if the user done the initial pose after the required pose or not in order to enable the drone to do another move
+doing_task_flag = False         # Indicate if the drone is busy doing a move/task or available to do a move
+
+
+# Different Poses classification parameters
+poses_config_thresh = 5
+poses_config =[
+     {"limits":[{"min": 130-poses_config_thresh, "max": 150+poses_config_thresh}], "name": "Forward",  "joints": ["left_elbow"],    "num_joints": 1}
+    ,{"limits":[{"min": 40-poses_config_thresh,  "max": 60+poses_config_thresh}],  "name": "Backward", "joints": ["left_elbow"],    "num_joints": 1}
+    ,{"limits":[{"min": 130-poses_config_thresh, "max": 150+poses_config_thresh}], "name": "Right",    "joints": ["right_elbow"],   "num_joints": 1}
+    ,{"limits":[{"min": 30-poses_config_thresh,  "max": 50+poses_config_thresh}],  "name": "Left",     "joints": ["right_elbow"],   "num_joints": 1}
+    ,{"limits":[{"min": 130-poses_config_thresh, "max": 150+poses_config_thresh}], "name": "Up",       "joints": ["right_shoulder"], "num_joints": 1}
+    ,{"limits":[{"min": 50-poses_config_thresh,  "max": 70+poses_config_thresh}],  "name": "Down",     "joints": ["right_shoulder"], "num_joints": 1}
+    # To add a new pose:
+    # Do like below example
+    #,{"limits":[{"min": minimum_angle1,  "max": maximum_anlge1}, {"min": minimum_angle2,  "max": maximum_anlge2}, ...],  "name": pose_name,     "joints": [joint1_name, joint2_name, ...], "num_joints": 2/...}
+]
+
 
 
 rospy.init_node("HPE_drone_node") # name of your ROS node
@@ -38,50 +79,21 @@ land = rospy.ServiceProxy('land', Trigger)
 arming = rospy.ServiceProxy('mavros/cmd/arming', CommandBool)
 util.safety_check(get_telemetry, arming)
 
-
-target_x = 2
-target_y = 5
-target_z = 0
-out_flag = 0
-
-
-#Tornado Folder Paths
-tornado_settings = dict(
-	template_path = os.path.join(os.path.dirname(__file__), "templates"),
-	static_path = os.path.join(os.path.dirname(__file__), "static")
-	)
-
-#Tonado server port
-PORT = 8093
-
-
-initial_pose_flag = False
-action_transition_flag = False
-doing_task_flag = False
-# x,y,z = 0,0,0
-
-poses_config_thresh = 5
-poses_config =[
-     {"limits":[{"min": 130-poses_config_thresh, "max": 150+poses_config_thresh}], "name": "Forward",  "joints": ["left_elbow"],    "num_joints": 1}
-    ,{"limits":[{"min": 40-poses_config_thresh,  "max": 60+poses_config_thresh}],  "name": "Backward", "joints": ["left_elbow"],    "num_joints": 1}
-    ,{"limits":[{"min": 130-poses_config_thresh, "max": 150+poses_config_thresh}], "name": "Right",    "joints": ["right_elbow"],   "num_joints": 1}
-    ,{"limits":[{"min": 30-poses_config_thresh,  "max": 50+poses_config_thresh}],  "name": "Left",     "joints": ["right_elbow"],   "num_joints": 1}
-    ,{"limits":[{"min": 130-poses_config_thresh, "max": 150+poses_config_thresh}], "name": "Up",       "joints": ["right_shoulder"], "num_joints": 1}
-    ,{"limits":[{"min": 50-poses_config_thresh,  "max": 70+poses_config_thresh}],  "name": "Down",     "joints": ["right_shoulder"], "num_joints": 1}
-    #for multiple joints:
-    #{[{"min": , "max": ,...}]}
-]
-
-
+# Function for handling Ctrl+C and land the drone
 def signalHandler(signal, frame):
     print("Ctrl+C is pressed")
     print("Drone is being landed")
     cleverMove.drone_land(land, arming)
     sys.exit(0)
+
 def get_distance(p1, p2):
     return(math.sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2))
+
+# From Radian to Degree
 def to_degree(theta):
     return(180.0*theta/math.pi)
+
+# Get angle between n3 Points
 def get_angle(p1, p2, p3):
     # using Cosine law
     len_p1p2 = get_distance(p1, p2) 
@@ -91,6 +103,7 @@ def get_angle(p1, p2, p3):
     tmp_comp /=(-2*len_p1p2*len_p1p3)
     return(math.acos(tmp_comp))
 
+# Calculate the needed angles from the points of the human skeleton
 def calc_angles(skeleton):
     # keypoints of interest are rightShoulder(6), rightElbow(8), rightWrist(10), rightHip(12) and leftShoulder(5), rightElbow(7), rightWrist(9), leftHip(11)
     right_shoulder_point = list(skeleton[6]["position"].values())
@@ -116,6 +129,7 @@ def calc_angles(skeleton):
     }
     return angles
 
+# To check the exsitance of the keypoints
 def check_keypoints_existance(skeleton):
     right_shoulder_score = skeleton[6]["score"]
     right_elbow_score    = skeleton[8]["score"]
@@ -128,7 +142,7 @@ def check_keypoints_existance(skeleton):
     left_hip_score      = skeleton[11]["score"]
 
     flags_counter = 0
-    score_thresh = 0.5
+    score_thresh = 0.5 # Threshold for determine if the keypoint exist or not
     num_needed_keypoints = 6
     if(right_shoulder_score > score_thresh):
         flags_counter += 1
@@ -165,26 +179,27 @@ def check_keypoints_existance(skeleton):
     else:
         print("Try to move back and empty background for more accuraccy")
     return 0
-    
+
+# To check the intial pose is made or not using the angles
 def check_initial_pose(angles):
-    threshold = 10
+    threshold_err = 10
     flags_counter = 0
-    if(angles["right_shoulder"] < 90+threshold and angles["right_shoulder"] > 90-threshold):
+    if(angles["right_shoulder"] < 90+threshold_err and angles["right_shoulder"] > 90-threshold_err):
         flags_counter += 1
     else:
         print("Right Shoulder angle is not correct, current: {:}".format(angles["right_shoulder"]))
 
-    if(angles["right_elbow"] < 90+threshold and angles["right_elbow"] > 90-threshold):
+    if(angles["right_elbow"] < 90+threshold_err and angles["right_elbow"] > 90-threshold_err):
         flags_counter += 1
     else:
         print("Right Elbow angle is not correct, current: {:}".format(angles["right_elbow"]))
 
-    if(angles["left_shoulder"] < 90+threshold and angles["left_shoulder"] > 90-threshold):
+    if(angles["left_shoulder"] < 90+threshold_err and angles["left_shoulder"] > 90-threshold_err):
         flags_counter += 1
     else:
         print("Left Shoulder angle is not correct, current: {:}".format(angles["left_shoulder"]))
 
-    if(angles["left_elbow"] < 90+threshold and angles["left_elbow"] > 90-threshold):
+    if(angles["left_elbow"] < 90+threshold_err and angles["left_elbow"] > 90-threshold_err):
         flags_counter += 1
     else:
         print("Left Elbow angle is not correct, current: {:}".format(angles["left_elbow"]))
@@ -193,7 +208,6 @@ def check_initial_pose(angles):
         return 1
     return 0
 
-# Now it defines pose at once, it will recognize poses together by returning a list of poses
 def recognize_pose(angles):
     #{"limits":[{"min": 100-poses_config_thresh, "max": 120+poses_config_thresh}], "name": "Forward",  "joints": ["left_elbow"],    "num_joints": 1},
     for i,pose in enumerate(poses_config):
@@ -214,27 +228,27 @@ def recognize_pose(angles):
 
 def main(data):
     '''
-    Example:
-     Incoming message: [{"score":0.24410172250560103,
-     "keypoints":[
-     {"score":0.9910107851028442,"part":"nose","position":{"x":252.86354913971303,"y":479.49954971729085}},
-     {"score":0.9988914132118225,"part":"leftEye","position":{"x":217.64691708338398,"y":443.8451744703004}},
-     {"score":0.9973353147506714,"part":"rightEye","position":{"x":295.1978541274015,"y":441.88124363524446}},
-     {"score":0.526421844959259,"part":"leftEar","position":{"x":170.09496120348973,"y":468.07006360955745}},
-     {"score":0.4756258726119995,"part":"rightEar","position":{"x":346.43769308008575,"y":451.6009378989847}},
-     {"score":0.007388501428067684,"part":"leftShoulder","position":{"x":180.34555445570885,"y":418.50647685128894}},
-     {"score":0.0072729201056063175,"part":"rightShoulder","position":{"x":154.96318226380106,"y":418.94439816011067}},
-     {"score":0.017484841868281364,"part":"leftElbow","position":{"x":224.838224062196,"y":460.099917163181}},
-     {"score":0.008609074167907238,"part":"rightElbow","position":{"x":340.5925497210907,"y":515.8285653080922}},
-     {"score":0.007281377445906401,"part":"leftWrist","position":{"x":221.43342418151138,"y":484.6566760586394}},
-     {"score":0.023914989084005356,"part":"rightWrist","position":{"x":296.11626698534775,"y":496.79646176586823}},
-     {"score":0.011906704865396023,"part":"leftHip","position":{"x":220.51515381809338,"y":481.1839062879985}},
-     {"score":0.016597222536802292,"part":"rightHip","position":{"x":305.0108288716713,"y":503.99571281462795}},
-     {"score":0.014175777323544025,"part":"leftKnee","position":{"x":211.4903697448018,"y":483.11360281265206}},
-     {"score":0.016598301008343697,"part":"rightKnee","position":{"x":220.3225012159533,"y":484.7732722063473}},
-     {"score":0.013498651795089245,"part":"leftAnkle","position":{"x":205.4901745272981,"y":477.2344210732308}},
-     {"score":0.015715690329670906,"part":"rightAnkle","position":{"x":238.2701501512342,"y":470.4443430622265}}
-     ]}]
+    Example of the data:
+      Incoming message: [{"score":0.24410172250560103,
+        "keypoints":[
+            {"score":0.9910107851028442,"part":"nose","position":{"x":252.86354913971303,"y":479.49954971729085}},
+            {"score":0.9988914132118225,"part":"leftEye","position":{"x":217.64691708338398,"y":443.8451744703004}},
+            {"score":0.9973353147506714,"part":"rightEye","position":{"x":295.1978541274015,"y":441.88124363524446}},
+            {"score":0.526421844959259,"part":"leftEar","position":{"x":170.09496120348973,"y":468.07006360955745}},
+            {"score":0.4756258726119995,"part":"rightEar","position":{"x":346.43769308008575,"y":451.6009378989847}},
+            {"score":0.007388501428067684,"part":"leftShoulder","position":{"x":180.34555445570885,"y":418.50647685128894}},
+            {"score":0.0072729201056063175,"part":"rightShoulder","position":{"x":154.96318226380106,"y":418.94439816011067}},
+            {"score":0.017484841868281364,"part":"leftElbow","position":{"x":224.838224062196,"y":460.099917163181}},
+            {"score":0.008609074167907238,"part":"rightElbow","position":{"x":340.5925497210907,"y":515.8285653080922}},
+            {"score":0.007281377445906401,"part":"leftWrist","position":{"x":221.43342418151138,"y":484.6566760586394}},
+            {"score":0.023914989084005356,"part":"rightWrist","position":{"x":296.11626698534775,"y":496.79646176586823}},
+            {"score":0.011906704865396023,"part":"leftHip","position":{"x":220.51515381809338,"y":481.1839062879985}},
+            {"score":0.016597222536802292,"part":"rightHip","position":{"x":305.0108288716713,"y":503.99571281462795}},
+            {"score":0.014175777323544025,"part":"leftKnee","position":{"x":211.4903697448018,"y":483.11360281265206}},
+            {"score":0.016598301008343697,"part":"rightKnee","position":{"x":220.3225012159533,"y":484.7732722063473}},
+            {"score":0.013498651795089245,"part":"leftAnkle","position":{"x":205.4901745272981,"y":477.2344210732308}},
+            {"score":0.015715690329670906,"part":"rightAnkle","position":{"x":238.2701501512342,"y":470.4443430622265}}
+        ]}]
     '''
     data_json = json.loads(data.encode("utf-8"))
     if(len(data_json) == 0):
@@ -244,9 +258,6 @@ def main(data):
     # print(data_json)
     if(doing_task_flag):
         print("[Status]: Doing the task TTTTTTTT")
-        # for i in range(5+1):
-        #     print("{:}...".format(5-i))
-        #     sleep(1)
         global target_x
         global target_y
         global target_z
@@ -339,8 +350,6 @@ class WSHandler(tornado.websocket.WebSocketHandler):
  
   def on_message(self, message):
     # print (('[WS] Incoming message:'), message)
-    # Check if the drone should move or not, finished the last task or not
-    # if()
     main(message)
   def on_close(self):
     print ('[WS] Connection was closed.')
