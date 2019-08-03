@@ -3,7 +3,8 @@
 [![Video demo for the project - moving camera](https://img.youtube.com/vi/ucPONeHg2lk/0.jpg)](https://youtu.be/ucPONeHg2lk)
 [![Video demo for the project - laptop camera](https://img.youtube.com/vi/EDcTtPLxzoU/0.jpg)](https://youtu.be/EDcTtPLxzoU)
 
-[The documentation for the project in COEX clever Gitbook (NOT available yet)](link)
+
+[The documentation for the project in COEX clever Gitbook](https://clever.copterexpress.com/en/human_pose_estimation_drone_control.html?fbclid=IwAR0HNgMiuSDrjvIgc6uA3R1rvrtF_gh-6OOH2aK-ybK7Aho0_2UYn6ahE1s)
 
 This project is about to control clever4 drone from [Copter Express company](https://copterexpress.com/) by different human poses.
 In this project, there have been many trials to estimate the human pose by using:
