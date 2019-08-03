@@ -12,7 +12,7 @@ from clever import srv
 from std_srvs.srv import Trigger
 from mavros_msgs.srv import CommandBool
 from std_msgs.msg import String
-import shared
+import util
 
 # Targets coordinates
 target_x = 8
@@ -46,7 +46,7 @@ land = rospy.ServiceProxy('land', Trigger)
 arming = rospy.ServiceProxy('mavros/cmd/arming', CommandBool)
 
 # Safety check for the error of throttling speed
-shared.safety_check(get_telemetry, arming)
+util.safety_check(get_telemetry, arming)
 
 def key_callback(data):
     s = data.data
@@ -93,7 +93,7 @@ def drone_land():
     if(res.success):
         print("Drone has been landed")
 
-    shared.count_down(5)	#to ensure that it is landed already
+    util.count_down(5)	#to ensure that it is landed already
     #there is a problem in landing that it reads that it lands already and it is not
     arming(False)
 
@@ -103,19 +103,19 @@ def take_off():
     print(start_pos)
     print("Height: ~{:}m".format(VIEW_HEIGHT))
     navigate(z=VIEW_HEIGHT, speed=SPEED, frame_id='body', auto_arm=True)
-    #shared.wait_till_arrive(get_telemetry, 0, 0, start_pos.z+VIEW_HEIGHT, 'map',1)
-    shared.count_down(4)
+    #util.wait_till_arrive(get_telemetry, 0, 0, start_pos.z+VIEW_HEIGHT, 'map',1)
+    util.count_down(4)
     
 def move(target_x, target_y):
     #current_pos = get_telemetry(frame_id='aruco_map')
     navigate(x=target_x, y=target_y, z=VIEW_HEIGHT, yaw=float('nan'), speed=SPEED, frame_id='aruco_map')
-    #shared.wait_till_arrive(get_telemetry, target_x, target_y, current_pos.z)
-    shared.count_down(4)
+    #util.wait_till_arrive(get_telemetry, target_x, target_y, current_pos.z)
+    util.count_down(4)
 
 def rotate_right_yaw():
     print("Rotate to: {:} Degree -> {:} Rad".format(-1*target_yaw*90, -1*target_yaw*((math.pi)/2.0)))
     navigate(x=target_x,y=target_y,z=VIEW_HEIGHT, yaw=-1*target_yaw*((math.pi)/2.0), speed=SPEED, frame_id='aruco_map')
-    shared.count_down(4)
+    util.count_down(4)
 
 def main():
     take_off()
@@ -124,7 +124,7 @@ def main():
     print("Ready to be controlled from keyboard")
     rospy.Subscriber("key_value", String, key_callback)
     print("Get ready in:")
-    shared.count_down(5)
+    util.count_down(5)
 
     while(out_flag == 0):
         global target_x
@@ -145,7 +145,7 @@ def main():
 
 if __name__ == '__main__':
     print("Starting the task after:")
-    shared.count_down(3)
+    util.count_down(3)
     print("--------------Start--------------")
     main()
     print("--------------Done--------------")
