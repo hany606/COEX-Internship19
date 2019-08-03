@@ -1,0 +1,5 @@
+# Neuro Helmet
+This code was to control a drone using EEG Brain signals that 
+#   is emulated by a program that emulates each person's emotion with key press
+#
+After we have classified the emotion form the brain signal and we know which emotion that the person is doing we need to control the drone using this emotion. We have used another program that can connect with the program who classified the brain signal and can emulate the keyboard. We have used a teleop ros node to have in an open terminal the possibility to pass the keyboard press to one of the topics that the main code that runs on the drone can subscribe on it and find out which key has been pressed which is corresponding to a specific brain signal for a certain emotion. The main code on the drone is mainly subscribe to this topic and take an action according to that.
