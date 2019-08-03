@@ -7,6 +7,7 @@ This project was a team project and my responsibility was the coding part in thi
 This project is controlling a drone using EEG Brain signals that is classified to a certain user's emotion through the Cortex software and use BioEcho software that emulates a real keyboard presses that is focused on a terminal that runs teleop_keyboard.py that publish the keyboard presses into a topic and the main code that runs on the drone subscribes on that topic and take a move either forward or make a rotation in Yaw direction.
 
 [The sensor that was used](https://neurobotics.ru/catalog/nejrogarnituryi/kopiya-nejroplej-8m/)
+
 [Cortex Software and BioEcho](https://neurobotics.ru/downloads/)
 
 The architecture as follow:
