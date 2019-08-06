@@ -113,8 +113,8 @@ def move(target_x, target_y):
     util.count_down(4)
 
 def rotate_right_yaw():
-    print("Rotate to: {:} Degree -> {:} Rad".format(-1*target_yaw*90, -1*target_yaw*((math.pi)/2.0)))
-    navigate(x=target_x,y=target_y,z=VIEW_HEIGHT, yaw=-1*target_yaw*((math.pi)/2.0), speed=SPEED, frame_id='aruco_map')
+    print("Rotate to: {:} Degree -> {:} Rad".format(target_yaw*90, target_yaw*((math.pi)/2.0)))
+    navigate(x=target_x,y=target_y,z=VIEW_HEIGHT, yaw=target_yaw*((math.pi)/2.0), speed=SPEED, frame_id='aruco_map')
     util.count_down(4)
 
 def main():
