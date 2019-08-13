@@ -5,3 +5,5 @@ The project was made using Jetson Nano, IntelRealsense D435 as our Depth camera 
 We have used until now RTAB-map for SLAM with D435 and integrate with them the odometry from T265.
 
 This project was a team project in the software department.
+
+The documentation of the project with details and current results is [here](https://docs.google.com/document/d/1skxGFYi83ulUHJgukXZHE4I3nYu8yVzCJ7wy1dd4NaE/edit?usp=drivesdk).
