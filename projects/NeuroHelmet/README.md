@@ -2,7 +2,7 @@
 This project is about to control a clever4 drone from Copter Express according to the user's emotions.
 This project was a team project and my responsibility was the coding part in this repo.
 
-[The documentation for the project in COEX clever Gitbook (Not Available now)](link)
+[The documentation for the project in COEX clever Gitbook](https://clever.copterexpress.com/ru/control_emotions.html)
 
 [![Video demo for the project](https://img.youtube.com/vi/uLR5NNcekfA/0.jpg)](https://youtu.be/uLR5NNcekfA)
 
